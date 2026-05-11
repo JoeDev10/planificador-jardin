@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
-import { BookOpen, CalendarDays, Sparkles, Menu, X, ListChecks } from 'lucide-react';
+import { NavLink, Link, Outlet } from 'react-router-dom';
+import { BookOpen, CalendarDays, Sparkles, Menu, X, ListChecks, HelpCircle } from 'lucide-react';
 
 const nav = [
   { to: '/', label: 'Proyectos', icon: BookOpen, end: true },
@@ -43,6 +43,12 @@ export default function Layout() {
               </NavLink>
             ))}
           </nav>
+
+          {/* Help link */}
+          <Link to="/guia" className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+            <HelpCircle size={15} />
+            Ayuda
+          </Link>
 
           {/* Mobile menu button */}
           <button

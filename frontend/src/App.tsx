@@ -7,6 +7,7 @@ import ProyectoDetalle from './pages/ProyectoDetalle';
 import PlanificacionAnualPage from './pages/PlanificacionAnual';
 import Asistente from './pages/Asistente';
 import SecuenciasPage from './pages/Secuencias';
+import Guia from './pages/Guia';
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
             <Route path="planificacion" element={<PlanificacionAnualPage />} />
             <Route path="secuencias" element={<SecuenciasPage />} />
             <Route path="asistente" element={<Asistente />} />
+            <Route path="guia" element={<Guia />} />
           </Route>
         </Routes>
       </BrowserRouter>
