@@ -1,12 +1,14 @@
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+  schemas   = ["jardin"]
 }
 
 model Docente {
@@ -16,6 +18,8 @@ model Docente {
   createdAt     DateTime             @default(now()) @map("created_at")
   proyectos     Proyecto[]
   planificacion PlanificacionAnual[]
+
+  @@schema("jardin")
 }
 
 model Proyecto {
@@ -34,6 +38,8 @@ model Proyecto {
   updatedAt       DateTime    @updatedAt @map("updated_at")
   docente         Docente?    @relation(fields: [docenteId], references: [id])
   actividades     Actividad[]
+
+  @@schema("jardin")
 }
 
 model Actividad {
@@ -48,6 +54,8 @@ model Actividad {
   area       String   @default("")
   createdAt  DateTime @default(now()) @map("created_at")
   proyecto   Proyecto @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+
+  @@schema("jardin")
 }
 
 model Secuencia {
@@ -61,6 +69,8 @@ model Secuencia {
   actividades SecuenciaActividad[]
   createdAt   DateTime             @default(now()) @map("created_at")
   updatedAt   DateTime             @updatedAt @map("updated_at")
+
+  @@schema("jardin")
 }
 
 model SecuenciaActividad {
@@ -75,6 +85,8 @@ model SecuenciaActividad {
   materiales  String    @default("")
   area        String    @default("")
   createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@schema("jardin")
 }
 
 model PlanificacionAnual {
@@ -90,4 +102,6 @@ model PlanificacionAnual {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
   docente         Docente? @relation(fields: [docenteId], references: [id])
+
+  @@schema("jardin")
 }

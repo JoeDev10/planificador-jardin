@@ -13,7 +13,7 @@ router.get('/:anio', async (req: Request, res: Response) => {
     where: { anio: Number(req.params.anio) },
     orderBy: [{ orden: 'asc' }],
   });
-  items.sort((a, b) => (ORDEN_MES[a.mes] ?? 99) - (ORDEN_MES[b.mes] ?? 99) || a.orden - b.orden);
+  items.sort((a: { mes: string; orden: number }, b: { mes: string; orden: number }) => (ORDEN_MES[a.mes] ?? 99) - (ORDEN_MES[b.mes] ?? 99) || a.orden - b.orden);
   res.json(items);
 });
 
