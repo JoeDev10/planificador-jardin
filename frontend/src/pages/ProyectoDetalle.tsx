@@ -6,8 +6,9 @@ import {
 } from 'lucide-react';
 import {
   DndContext, closestCenter, PointerSensor, TouchSensor,
-  useSensor, useSensors, DragEndEvent,
+  useSensor, useSensors,
 } from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
 import {
   SortableContext, verticalListSortingStrategy,
   useSortable, arrayMove,

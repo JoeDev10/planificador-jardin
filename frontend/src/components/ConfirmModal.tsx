@@ -1,5 +1,6 @@
 import { AlertTriangle, Trash2, X } from 'lucide-react';
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
+import type { ReactNode } from 'react';
 
 interface ConfirmOptions {
   title?: string;
