@@ -1,0 +1,93 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Docente {
+  id            Int                  @id @default(autoincrement())
+  nombre        String
+  institucion   String
+  createdAt     DateTime             @default(now()) @map("created_at")
+  proyectos     Proyecto[]
+  planificacion PlanificacionAnual[]
+}
+
+model Proyecto {
+  id              Int         @id @default(autoincrement())
+  docenteId       Int?        @map("docente_id")
+  nombre          String
+  institucion     String
+  seccion         String
+  duracion        String
+  fundamentacion  String
+  propositos      String
+  areasContenidos String      @map("areas_contenidos")
+  evaluacion      String
+  estado          String      @default("borrador")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  docente         Docente?    @relation(fields: [docenteId], references: [id])
+  actividades     Actividad[]
+}
+
+model Actividad {
+  id         Int      @id @default(autoincrement())
+  proyectoId Int      @map("proyecto_id")
+  numero     Int
+  nombre     String
+  inicio     String
+  desarrollo String
+  cierre     String
+  materiales String   @default("")
+  area       String   @default("")
+  createdAt  DateTime @default(now()) @map("created_at")
+  proyecto   Proyecto @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+}
+
+model Secuencia {
+  id          Int                  @id @default(autoincrement())
+  docenteId   Int?                 @map("docente_id")
+  titulo      String
+  sala        String
+  area        String               @default("")
+  duracion    String               @default("")
+  proposito   String               @default("")
+  actividades SecuenciaActividad[]
+  createdAt   DateTime             @default(now()) @map("created_at")
+  updatedAt   DateTime             @updatedAt @map("updated_at")
+}
+
+model SecuenciaActividad {
+  id          Int       @id @default(autoincrement())
+  secuenciaId Int       @map("secuencia_id")
+  secuencia   Secuencia @relation(fields: [secuenciaId], references: [id], onDelete: Cascade)
+  numero      Int
+  nombre      String
+  inicio      String    @default("")
+  desarrollo  String    @default("")
+  cierre      String    @default("")
+  materiales  String    @default("")
+  area        String    @default("")
+  createdAt   DateTime  @default(now()) @map("created_at")
+}
+
+model PlanificacionAnual {
+  id              Int      @id @default(autoincrement())
+  docenteId       Int?     @map("docente_id")
+  anio            Int
+  mes             String
+  propuesta       String
+  propositos      String
+  areasContenidos String   @map("areas_contenidos")
+  objetivos       String
+  orden           Int      @default(0)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  docente         Docente? @relation(fields: [docenteId], references: [id])
+}
