@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const router = Router();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const MODEL = 'gemini-2.0-flash';
+const MODEL = 'gemini-2.5-flash';
 
 const SYSTEM_PROMPT = `Sos una asistente especializada en planificación didáctica para el Nivel Inicial argentino (jardín de infantes, salas de 2 a 5 años). Tu rol es ayudar a docentes a crear planificaciones pedagógicas de alta calidad, siguiendo el Diseño Curricular del Nivel Inicial.
 
