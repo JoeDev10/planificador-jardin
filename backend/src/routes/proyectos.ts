@@ -1,59 +1,59 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import prisma from '../db/database';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
 
 const router = Router();
+router.use(authMiddleware);
 
-router.get('/', async (_req: Request, res: Response) => {
+router.get('/', async (req: AuthRequest, res: Response) => {
   const proyectos = await prisma.proyecto.findMany({
-    include: { docente: true },
+    where: { userId: req.userId },
+    include: { actividades: { select: { id: true } } },
     orderBy: { createdAt: 'desc' },
   });
   res.json(proyectos);
 });
 
-router.get('/:id', async (req: Request, res: Response) => {
-  const proyecto = await prisma.proyecto.findUnique({
-    where: { id: Number(req.params.id) },
-    include: {
-      docente: true,
-      actividades: { orderBy: { numero: 'asc' } },
-    },
+router.get('/:id', async (req: AuthRequest, res: Response) => {
+  const proyecto = await prisma.proyecto.findFirst({
+    where: { id: Number(req.params.id), userId: req.userId },
+    include: { actividades: { orderBy: { numero: 'asc' } } },
   });
   if (!proyecto) return res.status(404).json({ error: 'Proyecto no encontrado' });
   res.json(proyecto);
 });
 
-router.post('/', async (req: Request, res: Response) => {
-  const { docenteId, nombre, institucion, seccion, duracion, fundamentacion, propositos, areasContenidos, evaluacion } = req.body;
+router.post('/', async (req: AuthRequest, res: Response) => {
+  const { nombre, institucion, seccion, duracion, fundamentacion, propositos, areasContenidos, evaluacion } = req.body;
   const proyecto = await prisma.proyecto.create({
-    data: { docenteId: docenteId || null, nombre, institucion, seccion, duracion, fundamentacion, propositos, areasContenidos, evaluacion },
+    data: { userId: req.userId, nombre, institucion, seccion, duracion, fundamentacion, propositos, areasContenidos, evaluacion },
   });
   res.status(201).json({ id: proyecto.id });
 });
 
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', async (req: AuthRequest, res: Response) => {
   const { nombre, institucion, seccion, duracion, fundamentacion, propositos, areasContenidos, evaluacion, estado } = req.body;
-  await prisma.proyecto.update({
-    where: { id: Number(req.params.id) },
+  await prisma.proyecto.updateMany({
+    where: { id: Number(req.params.id), userId: req.userId },
     data: { nombre, institucion, seccion, duracion, fundamentacion, propositos, areasContenidos, evaluacion, estado },
   });
   res.json({ ok: true });
 });
 
-router.delete('/:id', async (req: Request, res: Response) => {
-  await prisma.proyecto.delete({ where: { id: Number(req.params.id) } });
+router.delete('/:id', async (req: AuthRequest, res: Response) => {
+  await prisma.proyecto.deleteMany({ where: { id: Number(req.params.id), userId: req.userId } });
   res.json({ ok: true });
 });
 
-router.post('/:id/duplicar', async (req: Request, res: Response) => {
-  const original = await prisma.proyecto.findUnique({
-    where: { id: Number(req.params.id) },
+router.post('/:id/duplicar', async (req: AuthRequest, res: Response) => {
+  const original = await prisma.proyecto.findFirst({
+    where: { id: Number(req.params.id), userId: req.userId },
     include: { actividades: { orderBy: { numero: 'asc' } } },
   });
   if (!original) return res.status(404).json({ error: 'No encontrado' });
-  const { id, createdAt, updatedAt, actividades, docente, nombre, ...rest } = original;
+  const { id, createdAt, updatedAt, actividades, nombre, ...rest } = original;
   const nuevo = await prisma.proyecto.create({
-    data: { ...rest, nombre: `${nombre} (copia)`, estado: 'borrador' },
+    data: { ...rest, userId: req.userId, nombre: `${nombre} (copia)`, estado: 'borrador' },
   });
   for (const act of actividades) {
     const { id: _id, createdAt: _ca, proyectoId: _pid, ...actData } = act;

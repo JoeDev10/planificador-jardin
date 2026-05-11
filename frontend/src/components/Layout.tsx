@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Link, Outlet } from 'react-router-dom';
-import { BookOpen, CalendarDays, Sparkles, Menu, X, ListChecks, HelpCircle } from 'lucide-react';
+import { BookOpen, CalendarDays, Sparkles, Menu, X, ListChecks, HelpCircle, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const nav = [
   { to: '/', label: 'Proyectos', icon: BookOpen, end: true },
@@ -11,6 +12,7 @@ const nav = [
 
 export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -44,11 +46,20 @@ export default function Layout() {
             ))}
           </nav>
 
-          {/* Help link */}
-          <Link to="/guia" className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
-            <HelpCircle size={15} />
-            Ayuda
-          </Link>
+          {/* Help + logout */}
+          <div className="hidden md:flex items-center gap-1">
+            <Link to="/guia" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+              <HelpCircle size={15} />
+              Ayuda
+            </Link>
+            <button
+              onClick={signOut}
+              title={user?.email}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+            >
+              <LogOut size={15} />
+            </button>
+          </div>
 
           {/* Mobile menu button */}
           <button

@@ -24,6 +24,7 @@ model Docente {
 
 model Proyecto {
   id              Int         @id @default(autoincrement())
+  userId          String?     @map("user_id")
   docenteId       Int?        @map("docente_id")
   nombre          String
   institucion     String
@@ -60,6 +61,7 @@ model Actividad {
 
 model Secuencia {
   id          Int                  @id @default(autoincrement())
+  userId      String?              @map("user_id")
   docenteId   Int?                 @map("docente_id")
   titulo      String
   sala        String
@@ -91,6 +93,7 @@ model SecuenciaActividad {
 
 model PlanificacionAnual {
   id              Int      @id @default(autoincrement())
+  userId          String?  @map("user_id")
   docenteId       Int?     @map("docente_id")
   anio            Int
   mes             String

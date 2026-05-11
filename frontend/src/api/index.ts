@@ -1,8 +1,18 @@
 import axios from 'axios';
 import type { Proyecto, Actividad, PlanificacionAnual, Secuencia, SecuenciaActividad } from '../types';
+import { supabase } from '../lib/supabase';
 
 const BASE = import.meta.env.VITE_API_URL ?? '/api';
 const api = axios.create({ baseURL: BASE });
+
+// Interceptor: agrega el token de Supabase en cada request
+api.interceptors.request.use(async (config) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) {
+    config.headers.Authorization = `Bearer ${session.access_token}`;
+  }
+  return config;
+});
 
 // Proyectos
 export const getProyectos = () => api.get<Proyecto[]>('/proyectos').then(r => r.data);
