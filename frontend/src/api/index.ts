@@ -62,6 +62,21 @@ export const updatePlanificacion = (id: number, data: Partial<PlanificacionAnual
   api.put(`/planificacion/${id}`, data).then(r => r.data);
 export const deletePlanificacion = (id: number) => api.delete(`/planificacion/${id}`).then(r => r.data);
 
+// Perfil
+export interface PerfilData {
+  id?: number;
+  nombre: string;
+  institucion: string;
+  sala: string;
+  provincia: string;
+  notas: string;
+}
+export const getPerfil = () => api.get<PerfilData>('/perfil').then(r => r.data);
+export const updatePerfil = (data: Omit<PerfilData, 'id'>) => api.put<PerfilData>('/perfil', data).then(r => r.data);
+
+// Chat historial
+export const limpiarHistorialChat = () => api.delete('/ia/chat/historial').then(r => r.data);
+
 // IA
 export const sugerirActividad = (data: { objetivo: string; sala?: string; area?: string; contexto?: string }) =>
   api.post<{ respuesta: string }>('/ia/sugerir-actividad', data).then(r => r.data);

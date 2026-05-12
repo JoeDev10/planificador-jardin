@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Link, Outlet } from 'react-router-dom';
-import { BookOpen, CalendarDays, Sparkles, Menu, X, ListChecks, HelpCircle, LogOut } from 'lucide-react';
+import { BookOpen, CalendarDays, Sparkles, Menu, X, ListChecks, HelpCircle, LogOut, UserCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const nav = [
@@ -46,11 +46,14 @@ export default function Layout() {
             ))}
           </nav>
 
-          {/* Help + logout */}
+          {/* Help + perfil + logout */}
           <div className="hidden md:flex items-center gap-1">
             <Link to="/guia" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
               <HelpCircle size={15} />
               Ayuda
+            </Link>
+            <Link to="/perfil" title="Mi perfil" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors">
+              <UserCircle size={15} />
             </Link>
             <button
               onClick={signOut}
@@ -89,6 +92,29 @@ export default function Layout() {
                 {label}
               </NavLink>
             ))}
+            <Link
+              to="/perfil"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+            >
+              <UserCircle size={18} />
+              Mi perfil
+            </Link>
+            <Link
+              to="/guia"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+            >
+              <HelpCircle size={18} />
+              Ayuda
+            </Link>
+            <button
+              onClick={() => { setMenuOpen(false); signOut(); }}
+              className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors w-full text-left"
+            >
+              <LogOut size={18} />
+              Cerrar sesión
+            </button>
           </div>
         )}
       </header>

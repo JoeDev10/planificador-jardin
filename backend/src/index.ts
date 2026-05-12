@@ -6,6 +6,7 @@ import actividadesRouter from './routes/actividades';
 import planificacionRouter from './routes/planificacion';
 import iaRouter from './routes/ia';
 import secuenciasRouter from './routes/secuencias';
+import perfilRouter from './routes/perfil';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use('/api/actividades', actividadesRouter);
 app.use('/api/planificacion', planificacionRouter);
 app.use('/api/ia', iaRouter);
 app.use('/api/secuencias', secuenciasRouter);
+app.use('/api/perfil', perfilRouter);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

@@ -91,6 +91,30 @@ model SecuenciaActividad {
   @@schema("jardin")
 }
 
+model Perfil {
+  id          Int      @id @default(autoincrement())
+  userId      String   @unique @map("user_id")
+  nombre      String   @default("")
+  institucion String   @default("")
+  sala        String   @default("")
+  provincia   String   @default("")
+  notas       String   @default("")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@schema("jardin")
+}
+
+model ChatMensaje {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  role      String
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@schema("jardin")
+}
+
 model PlanificacionAnual {
   id              Int      @id @default(autoincrement())
   userId          String?  @map("user_id")
