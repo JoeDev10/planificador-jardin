@@ -28,6 +28,77 @@ function detectarTipo(texto: string): 'proyecto' | 'secuencia' | null {
   return null;
 }
 
+type AnyParsed = {
+  nombre?: string; titulo?: string; fundamentacion?: string; proposito?: string;
+  sala?: string; area?: string; actividades?: { nombre?: string }[];
+};
+
+function PreviewData({ d, esProyecto, actividades, step, onClose, onGuardar }: {
+  d: AnyParsed;
+  esProyecto: boolean;
+  actividades: { nombre?: string }[];
+  step: string;
+  onClose: () => void;
+  onGuardar: () => void;
+}) {
+  const titulo = esProyecto ? (d.nombre ?? '') : (d.titulo ?? '');
+  const sala = d.sala ?? '';
+  const area = d.area ?? '';
+  const desc = esProyecto ? (d.fundamentacion ?? '') : (d.proposito ?? '');
+
+  return (
+    <div className="space-y-3">
+      <div className={`rounded-xl p-3 ${esProyecto ? 'bg-emerald-50 border border-emerald-200' : 'bg-violet-50 border border-violet-200'}`}>
+        <p className="font-bold text-slate-800 text-sm">{titulo}</p>
+        {esProyecto && sala && <p className="text-xs text-slate-500 mt-0.5">{sala}</p>}
+        {!esProyecto && (
+          <div className="flex gap-2 mt-1 flex-wrap">
+            {sala && <span className="badge bg-white text-slate-600 text-xs border">{sala}</span>}
+            {area && <span className="badge bg-white text-slate-600 text-xs border">{area}</span>}
+          </div>
+        )}
+      </div>
+      {desc && (
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+            {esProyecto ? 'Fundamentación' : 'Propósito'}
+          </p>
+          <p className="text-xs text-slate-600 line-clamp-3">{desc}</p>
+        </div>
+      )}
+      <div>
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
+          {actividades.length} actividad{actividades.length !== 1 ? 'es' : ''}
+        </p>
+        <div className="space-y-1">
+          {actividades.slice(0, 5).map((act, i) => (
+            <div key={i} className="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 rounded-lg px-2.5 py-1.5">
+              <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-600 text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+              {act.nombre ?? ''}
+            </div>
+          ))}
+          {actividades.length > 5 && (
+            <p className="text-xs text-slate-400 text-center">+{actividades.length - 5} más</p>
+          )}
+        </div>
+      </div>
+      <p className="text-xs text-slate-400 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+        💡 Podés editar todos los campos después de guardarlo
+      </p>
+      <div className="flex gap-2 pt-1">
+        <button className="btn-secondary flex-1 justify-center text-sm" onClick={onClose}>Cancelar</button>
+        <button className="btn-primary flex-1 justify-center text-sm" onClick={onGuardar} disabled={step === 'saving'}>
+          {step === 'saving' ? (
+            <><Loader2 size={14} className="animate-spin" /> Guardando...</>
+          ) : (
+            <><Check size={14} /> Guardar</>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // Modal de guardado con preview
 function GuardarModal({
   tipo, texto, sala, onClose, onGuardado,
@@ -131,8 +202,13 @@ function GuardarModal({
   };
 
   const esProyecto = tipo === 'proyecto';
-  const d = data as Record<string, unknown> | null;
-  const actividades = (d?.actividades as unknown[]) ?? [];
+  // Typed accessors para el preview
+  type AnyData = {
+    nombre?: string; titulo?: string; fundamentacion?: string; proposito?: string;
+    sala?: string; area?: string; actividades?: { nombre?: string }[];
+  };
+  const d = data as AnyData | null;
+  const actividades = d?.actividades ?? [];
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center sm:p-4">
@@ -169,72 +245,14 @@ function GuardarModal({
 
           {/* Preview */}
           {(step === 'preview' || step === 'saving') && d && (
-            <div className="space-y-3">
-              <div className={`rounded-xl p-3 ${esProyecto ? 'bg-emerald-50 border border-emerald-200' : 'bg-violet-50 border border-violet-200'}`}>
-                <p className="font-bold text-slate-800 text-sm">
-                  {esProyecto ? String(d.nombre ?? '') : String(d.titulo ?? '')}
-                </p>
-                {esProyecto && d.sala && (
-                  <p className="text-xs text-slate-500 mt-0.5">{String(d.sala)}</p>
-                )}
-                {!esProyecto && (
-                  <div className="flex gap-2 mt-1 flex-wrap">
-                    {d.sala && <span className="badge bg-white text-slate-600 text-xs border">{String(d.sala)}</span>}
-                    {d.area && <span className="badge bg-white text-slate-600 text-xs border">{String(d.area)}</span>}
-                  </div>
-                )}
-              </div>
-
-              {esProyecto && d.fundamentacion && (
-                <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Fundamentación</p>
-                  <p className="text-xs text-slate-600 line-clamp-3">{String(d.fundamentacion)}</p>
-                </div>
-              )}
-
-              {!esProyecto && d.proposito && (
-                <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Propósito</p>
-                  <p className="text-xs text-slate-600 line-clamp-2">{String(d.proposito)}</p>
-                </div>
-              )}
-
-              <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
-                  {actividades.length} actividad{actividades.length !== 1 ? 'es' : ''}
-                </p>
-                <div className="space-y-1">
-                  {(actividades as Record<string, unknown>[]).slice(0, 5).map((act, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 rounded-lg px-2.5 py-1.5">
-                      <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-600 text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
-                      {String(act.nombre ?? '')}
-                    </div>
-                  ))}
-                  {actividades.length > 5 && (
-                    <p className="text-xs text-slate-400 text-center">+{actividades.length - 5} más</p>
-                  )}
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-400 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                💡 Podés editar todos los campos después de guardarlo
-              </p>
-
-              <div className="flex gap-2 pt-1">
-                <button className="btn-secondary flex-1 justify-center text-sm" onClick={onClose}>Cancelar</button>
-                <button
-                  className="btn-primary flex-1 justify-center text-sm"
-                  onClick={guardar}
-                  disabled={step === 'saving'}
-                >
-                  {step === 'saving' ? (
-                    <><Loader2 size={14} className="animate-spin" /> Guardando...</>
-                  ) : (
-                    <><Check size={14} /> Guardar</>
-                  )}
-                </button>
-              </div>
-            </div>
+            <PreviewData
+              d={d}
+              esProyecto={esProyecto}
+              actividades={actividades}
+              step={step}
+              onClose={onClose}
+              onGuardar={guardar}
+            />
           )}
         </div>
       </div>
