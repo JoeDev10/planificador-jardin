@@ -11,6 +11,7 @@ import Asistente from './pages/Asistente';
 import SecuenciasPage from './pages/Secuencias';
 import Guia from './pages/Guia';
 import Perfil from './pages/Perfil';
+import Dashboard from './pages/Dashboard';
 
 function ProtectedRoutes() {
   const { user, loading } = useAuth();
@@ -31,7 +32,8 @@ function ProtectedRoutes() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route index element={<ProyectosPage />} />
+        <Route index element={<Dashboard />} />
+        <Route path="proyectos" element={<ProyectosPage />} />
         <Route path="proyectos/:id" element={<ProyectoDetalle />} />
         <Route path="planificacion" element={<PlanificacionAnualPage />} />
         <Route path="secuencias" element={<SecuenciasPage />} />

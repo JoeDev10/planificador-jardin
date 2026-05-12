@@ -322,7 +322,7 @@ export default function ProyectoDetalle() {
     <div>
       {/* Header */}
       <div className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6 no-print">
-        <button className="btn-ghost p-2 shrink-0" onClick={() => navigate('/')}><ArrowLeft size={18} /></button>
+        <button className="btn-ghost p-2 shrink-0" onClick={() => navigate('/proyectos')}><ArrowLeft size={18} /></button>
         <div className="flex-1 min-w-0">
           <h2 className="text-base sm:text-xl font-bold text-slate-800 truncate">{proyecto.nombre}</h2>
           <p className="text-xs sm:text-sm text-slate-500 truncate">{proyecto.seccion} · {proyecto.duracion}</p>

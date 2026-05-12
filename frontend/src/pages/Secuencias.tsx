@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import {
   Plus, ListChecks, Trash2, Pencil, Sparkles, ChevronDown, ChevronUp,
-  X, Check, Copy, GripVertical, Bot, Printer, Loader2,
+  X, Check, Copy, GripVertical, Bot, Printer, Loader2, Search,
 } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import {
@@ -74,6 +74,11 @@ export default function SecuenciasPage() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
+  // Filtros
+  const [busqueda, setBusqueda] = useState('');
+  const [filtroSala, setFiltroSala] = useState('');
+  const [filtroArea, setFiltroArea] = useState('');
+
   // Print
   const printRef = useRef<HTMLDivElement>(null);
   const [printSec, setPrintSec] = useState<Secuencia | null>(null);
@@ -98,6 +103,14 @@ export default function SecuenciasPage() {
   const [iaLoading, setIaLoading] = useState(false);
   const [iaSugerencia, setIaSugerencia] = useState('');
   const [iaSaving, setIaSaving] = useState(false);
+
+  const secuenciasFiltradas = secuencias.filter(s => {
+    const q = busqueda.toLowerCase();
+    return (!busqueda || s.titulo.toLowerCase().includes(q))
+      && (!filtroSala || s.sala === filtroSala)
+      && (!filtroArea || s.area === filtroArea);
+  });
+  const hayFiltros = busqueda || filtroSala || filtroArea;
 
   const cargar = async () => {
     setLoading(true);
@@ -282,6 +295,29 @@ export default function SecuenciasPage() {
         </div>
       </div>
 
+      {/* Buscador y filtros */}
+      {secuencias.length > 2 && (
+        <div className="flex flex-col sm:flex-row gap-2 mb-4">
+          <div className="relative flex-1">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input className="input pl-9" placeholder="Buscar por título..." value={busqueda} onChange={e => setBusqueda(e.target.value)} />
+          </div>
+          <select className="input sm:w-36" value={filtroSala} onChange={e => setFiltroSala(e.target.value)}>
+            <option value="">Todas las salas</option>
+            {SALAS.map(s => <option key={s}>{s}</option>)}
+          </select>
+          <select className="input sm:w-40" value={filtroArea} onChange={e => setFiltroArea(e.target.value)}>
+            <option value="">Todas las áreas</option>
+            {AREAS.map(a => <option key={a}>{a}</option>)}
+          </select>
+          {hayFiltros && (
+            <button className="btn-ghost text-sm py-2 px-3 shrink-0" onClick={() => { setBusqueda(''); setFiltroSala(''); setFiltroArea(''); }}>
+              <X size={14} /> Limpiar
+            </button>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <SecuenciasSkeleton />
       ) : secuencias.length === 0 ? (
@@ -302,9 +338,15 @@ export default function SecuenciasPage() {
             </button>
           </div>
         </div>
+      ) : secuenciasFiltradas.length === 0 ? (
+        <div className="text-center py-10">
+          <Search size={36} className="mx-auto text-slate-200 mb-3" />
+          <p className="text-slate-500 font-medium">Sin resultados</p>
+          <p className="text-slate-400 text-sm mt-1">Probá con otros filtros</p>
+        </div>
       ) : (
         <div className="space-y-3">
-          {secuencias.map(s => {
+          {secuenciasFiltradas.map(s => {
             const isOpen = expandedId === s.id;
             return (
               <div key={s.id} className="card overflow-hidden">

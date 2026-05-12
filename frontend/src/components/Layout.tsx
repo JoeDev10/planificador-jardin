@@ -1,14 +1,18 @@
 import { useState } from 'react';
 import { NavLink, Link, Outlet } from 'react-router-dom';
-import { BookOpen, CalendarDays, Sparkles, Menu, X, ListChecks, HelpCircle, LogOut, UserCircle } from 'lucide-react';
+import { BookOpen, CalendarDays, Sparkles, Menu, X, ListChecks, HelpCircle, LogOut, UserCircle, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const nav = [
-  { to: '/', label: 'Proyectos', icon: BookOpen, end: true },
+  { to: '/', label: 'Inicio', icon: LayoutDashboard, end: true },
+  { to: '/proyectos', label: 'Proyectos', icon: BookOpen, end: true },
   { to: '/secuencias', label: 'Secuencias', icon: ListChecks, end: false },
   { to: '/planificacion', label: 'Plan. Anual', icon: CalendarDays, end: false },
   { to: '/asistente', label: 'Asistente IA', icon: Sparkles, end: false },
 ];
+
+// Solo 4 items en mobile bottom nav (sin Plan. Anual)
+const mobileNav = nav.filter(n => n.to !== '/planificacion');
 
 export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -125,7 +129,7 @@ export default function Layout() {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex no-print z-40">
-        {nav.map(({ to, label, icon: Icon, end }) => (
+        {mobileNav.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}

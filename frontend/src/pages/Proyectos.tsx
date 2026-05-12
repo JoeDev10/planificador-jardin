@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Plus, BookOpen, Trash2, ChevronRight, Clock, CheckCircle2,
   X, Check, Search, Copy, Sparkles, ListChecks,
@@ -21,9 +21,10 @@ const emptyForm = (): NuevoProyecto => ({
 export default function ProyectosPage() {
   const { toast } = useToast();
   const { confirm } = useConfirm();
+  const location = useLocation();
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState((location.state as { openForm?: boolean })?.openForm ?? false);
   const [form, setForm] = useState<NuevoProyecto>(emptyForm());
   const [saving, setSaving] = useState(false);
   const [busqueda, setBusqueda] = useState('');
