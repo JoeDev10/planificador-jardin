@@ -78,6 +78,19 @@ export const updatePerfil = (data: Omit<PerfilData, 'id'>) => api.put<PerfilData
 export const limpiarHistorialChat = () => api.delete('/ia/chat/historial').then(r => r.data);
 
 // IA
+export const guardarProyectoDesdeIA = (data: { texto: string; sala?: string }) =>
+  api.post<{
+    nombre: string; fundamentacion: string; propositos: string;
+    areasContenidos: string; evaluacion: string; sala: string;
+    actividades: { nombre: string; inicio: string; desarrollo: string; cierre: string; materiales: string }[];
+  }>('/ia/guardar-proyecto', data).then(r => r.data);
+
+export const guardarSecuenciaDesdeIA = (data: { texto: string; sala?: string }) =>
+  api.post<{
+    titulo: string; proposito: string; sala: string; area: string; duracion: string;
+    actividades: { numero: number; nombre: string; inicio: string; desarrollo: string; cierre: string; materiales: string }[];
+  }>('/ia/guardar-secuencia', data).then(r => r.data);
+
 export const sugerirActividad = (data: { objetivo: string; sala?: string; area?: string; contexto?: string }) =>
   api.post<{ respuesta: string }>('/ia/sugerir-actividad', data).then(r => r.data);
 export const sugerirProyecto = (data: { tema: string; sala?: string; duracion?: string }) =>

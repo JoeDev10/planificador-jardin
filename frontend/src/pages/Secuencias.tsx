@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Plus, ListChecks, Trash2, Pencil, Sparkles, ChevronDown, ChevronUp,
-  X, Check, Copy, GripVertical, Bot,
+  X, Check, Copy, GripVertical, Bot, Printer, Loader2,
 } from 'lucide-react';
+import { useReactToPrint } from 'react-to-print';
 import {
   getSecuencias, createSecuencia, updateSecuencia, deleteSecuencia, duplicarSecuencia,
   createSecuenciaActividad, updateSecuenciaActividad, deleteSecuenciaActividad,
-  sugerirSecuencia,
+  sugerirSecuencia, guardarSecuenciaDesdeIA,
 } from '../api';
 import type { Secuencia, SecuenciaActividad } from '../types';
 import { SALAS, AREAS } from '../types';
@@ -73,6 +74,11 @@ export default function SecuenciasPage() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
+  // Print
+  const printRef = useRef<HTMLDivElement>(null);
+  const [printSec, setPrintSec] = useState<Secuencia | null>(null);
+  const handlePrint = useReactToPrint({ contentRef: printRef });
+
   // Modal secuencia
   const [showSecForm, setShowSecForm] = useState(false);
   const [editingSec, setEditingSec] = useState<Secuencia | null>(null);
@@ -91,6 +97,7 @@ export default function SecuenciasPage() {
   const [iaCantidad, setIaCantidad] = useState(3);
   const [iaLoading, setIaLoading] = useState(false);
   const [iaSugerencia, setIaSugerencia] = useState('');
+  const [iaSaving, setIaSaving] = useState(false);
 
   const cargar = async () => {
     setLoading(true);
@@ -218,6 +225,46 @@ export default function SecuenciasPage() {
     setIaLoading(false);
   };
 
+  const guardarDesdeIA = async () => {
+    if (!iaSugerencia) return;
+    setIaSaving(true);
+    try {
+      const parsed = await guardarSecuenciaDesdeIA({ texto: iaSugerencia, sala: iaSala });
+      const { id } = await createSecuencia({
+        titulo: parsed.titulo,
+        sala: parsed.sala || iaSala,
+        area: parsed.area || '',
+        duracion: parsed.duracion || '',
+        proposito: parsed.proposito,
+      });
+      for (const act of (parsed.actividades ?? [])) {
+        await createSecuenciaActividad(id, {
+          numero: act.numero,
+          nombre: act.nombre,
+          inicio: act.inicio,
+          desarrollo: act.desarrollo,
+          cierre: act.cierre,
+          materiales: act.materiales || '',
+          area: '',
+        });
+      }
+      toast(`Secuencia "${parsed.titulo}" guardada`, 'success');
+      setIaModal(false);
+      setIaSugerencia('');
+      setIaTema('');
+      cargar();
+    } catch {
+      toast('Error al guardar la secuencia', 'error');
+    }
+    setIaSaving(false);
+  };
+
+  const imprimirSecuencia = (sec: Secuencia) => {
+    setPrintSec(sec);
+    // Pequeño delay para que el DOM se actualice con el contenido de impresión
+    setTimeout(() => handlePrint(), 100);
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -275,6 +322,7 @@ export default function SecuenciasPage() {
                     </div>
                   </div>
                   <div className="flex gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+                    <button className="btn-ghost p-1.5" title="Imprimir / Exportar PDF" onClick={() => imprimirSecuencia(s)}><Printer size={13} /></button>
                     <button className="btn-ghost p-1.5" title="Duplicar" onClick={() => duplicar(s.id)}><Copy size={13} /></button>
                     <button className="btn-ghost p-1.5" onClick={() => abrirEditarSec(s)}><Pencil size={13} /></button>
                     <button className="btn-danger p-1.5" onClick={() => eliminarSec(s.id)}><Trash2 size={13} /></button>
@@ -416,6 +464,54 @@ export default function SecuenciasPage() {
         </div>
       )}
 
+      {/* Contenido oculto para impresión */}
+      <div className="hidden">
+        <div ref={printRef} className="p-8">
+          {printSec && (
+            <>
+              <div className="print-header mb-6 pb-4 border-b-2 border-emerald-600">
+                <h1 className="text-2xl font-bold text-slate-800">{printSec.titulo}</h1>
+                <div className="flex gap-3 mt-1 text-sm text-slate-500">
+                  <span>{printSec.sala}</span>
+                  {printSec.area && <span>· {printSec.area}</span>}
+                  {printSec.duracion && <span>· {printSec.duracion}</span>}
+                  <span>· {printSec.actividades?.length ?? 0} actividades</span>
+                </div>
+              </div>
+              {printSec.proposito && (
+                <div className="mb-5 print-section">
+                  <h4 className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Propósito General</h4>
+                  <p className="text-sm text-slate-700 whitespace-pre-wrap">{printSec.proposito}</p>
+                </div>
+              )}
+              <div className="space-y-5 mt-4">
+                {(printSec.actividades ?? []).map(act => (
+                  <div key={act.id} className="card p-4 print-section">
+                    <h4 className="font-bold text-base mb-3 text-slate-800">
+                      Actividad N° {act.numero}: {act.nombre}
+                    </h4>
+                    {act.area && <p className="text-xs text-slate-400 mb-2 uppercase tracking-wide">{act.area}</p>}
+                    {[
+                      { label: 'Inicio', value: act.inicio, bg: 'bg-sky-50' },
+                      { label: 'Desarrollo', value: act.desarrollo, bg: 'bg-amber-50' },
+                      { label: 'Cierre', value: act.cierre, bg: 'bg-emerald-50' },
+                    ].map(({ label, value, bg }) => value ? (
+                      <div key={label} className="mb-2">
+                        <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">{label}</p>
+                        <div className={`${bg} rounded-lg p-2.5 text-sm text-slate-700 whitespace-pre-wrap`}>{value}</div>
+                      </div>
+                    ) : null)}
+                    {act.materiales && (
+                      <p className="text-sm mt-2"><span className="font-semibold">Materiales:</span> {act.materiales}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
       {/* Modal IA - generar secuencia completa */}
       {iaModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center sm:p-4">
@@ -454,9 +550,20 @@ export default function SecuenciasPage() {
                   <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
                     {iaSugerencia}
                   </div>
+                  <button
+                    className="btn-primary w-full justify-center"
+                    onClick={guardarDesdeIA}
+                    disabled={iaSaving}
+                  >
+                    {iaSaving ? (
+                      <><Loader2 size={15} className="animate-spin" /> Guardando secuencia...</>
+                    ) : (
+                      <><Check size={15} /> Guardar secuencia en mis planificaciones</>
+                    )}
+                  </button>
                   <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3">
                     <Bot size={16} className="text-amber-600 shrink-0 mt-0.5" />
-                    <p className="text-xs text-amber-700">Usá esta sugerencia como base. Copiá el texto y creá la secuencia manualmente, o usalo como inspiración para tu propia planificación.</p>
+                    <p className="text-xs text-amber-700">Al guardar, la IA estructurará la secuencia automáticamente. Después podés editarla libremente.</p>
                   </div>
                 </div>
               )}

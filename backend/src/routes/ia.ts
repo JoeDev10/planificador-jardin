@@ -175,6 +175,80 @@ router.delete('/chat/historial', async (req: AuthRequest, res: Response) => {
   res.json({ ok: true });
 });
 
+router.post('/guardar-proyecto', async (req: AuthRequest, res: Response) => {
+  try {
+    const { texto, sala } = req.body as { texto: string; sala?: string };
+    const systemPrompt = await getSystemPrompt(req.userId!);
+    const prompt = `Analizá el siguiente texto que describe un proyecto didáctico y extraé la información en JSON válido (sin markdown, solo JSON puro).
+
+TEXTO:
+${texto}
+
+Devolvé SOLO este JSON (sin texto adicional, sin bloques de código):
+{
+  "nombre": "nombre del proyecto",
+  "fundamentacion": "texto de fundamentación",
+  "propositos": "texto de propósitos",
+  "areasContenidos": "texto de áreas y contenidos",
+  "evaluacion": "texto de evaluación (si no hay, escribí 'Evaluación continua a través de la observación directa')",
+  "sala": "${sala || '4 años'}",
+  "actividades": [
+    {
+      "nombre": "nombre de la actividad",
+      "inicio": "descripción del inicio",
+      "desarrollo": "descripción del desarrollo",
+      "cierre": "descripción del cierre",
+      "materiales": "lista de materiales"
+    }
+  ]
+}`;
+    const respuesta = await geminiChat(prompt, systemPrompt);
+    const cleaned = respuesta.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const json = JSON.parse(cleaned);
+    res.json(json);
+  } catch (error) {
+    console.error('Error parsing proyecto:', error);
+    res.status(500).json({ error: 'No se pudo estructurar el proyecto' });
+  }
+});
+
+router.post('/guardar-secuencia', async (req: AuthRequest, res: Response) => {
+  try {
+    const { texto, sala } = req.body as { texto: string; sala?: string };
+    const systemPrompt = await getSystemPrompt(req.userId!);
+    const prompt = `Analizá el siguiente texto que describe una secuencia didáctica y extraé la información en JSON válido (sin markdown, solo JSON puro).
+
+TEXTO:
+${texto}
+
+Devolvé SOLO este JSON (sin texto adicional, sin bloques de código):
+{
+  "titulo": "título de la secuencia",
+  "proposito": "propósito general (1-2 oraciones)",
+  "sala": "${sala || '4 años'}",
+  "area": "área curricular principal (o vacío si es general)",
+  "duracion": "duración estimada (o vacío si no se especifica)",
+  "actividades": [
+    {
+      "numero": 1,
+      "nombre": "nombre de la actividad",
+      "inicio": "descripción del inicio",
+      "desarrollo": "descripción del desarrollo",
+      "cierre": "descripción del cierre",
+      "materiales": "lista de materiales"
+    }
+  ]
+}`;
+    const respuesta = await geminiChat(prompt, systemPrompt);
+    const cleaned = respuesta.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const json = JSON.parse(cleaned);
+    res.json(json);
+  } catch (error) {
+    console.error('Error parsing secuencia:', error);
+    res.status(500).json({ error: 'No se pudo estructurar la secuencia' });
+  }
+});
+
 router.post('/sugerir-secuencia', async (req: AuthRequest, res: Response) => {
   try {
     const { tema, sala, cantidadActividades } = req.body;
