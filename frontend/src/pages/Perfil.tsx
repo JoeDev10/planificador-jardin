@@ -16,8 +16,8 @@ const PROVINCIAS = [
 
 export default function Perfil() {
   const { user } = useAuth();
-  const { addToast } = useToast();
-  const confirm = useConfirm();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
 
   const [form, setForm] = useState<Omit<PerfilData, 'id'>>({
     nombre: '',
@@ -41,7 +41,7 @@ export default function Perfil() {
           notas: data.notas || '',
         });
       })
-      .catch(() => addToast('No se pudo cargar el perfil', 'error'))
+      .catch(() => toast('No se pudo cargar el perfil', 'error'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -55,9 +55,9 @@ export default function Perfil() {
     try {
       await updatePerfil(form);
       setSaved(true);
-      addToast('Perfil guardado correctamente', 'success');
+      toast('Perfil guardado correctamente', 'success');
     } catch {
-      addToast('Error al guardar el perfil', 'error');
+      toast('Error al guardar el perfil', 'error');
     } finally {
       setSaving(false);
     }
@@ -73,9 +73,9 @@ export default function Perfil() {
     if (!ok) return;
     try {
       await limpiarHistorialChat();
-      addToast('Historial del chat eliminado', 'success');
+      toast('Historial del chat eliminado', 'success');
     } catch {
-      addToast('Error al limpiar el historial', 'error');
+      toast('Error al limpiar el historial', 'error');
     }
   };
 
