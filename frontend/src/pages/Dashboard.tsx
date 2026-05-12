@@ -8,6 +8,7 @@ import { getProyectos, getSecuencias, getPlanificacion, getPerfil } from '../api
 import type { PerfilData } from '../api';
 import type { Proyecto, Secuencia, PlanificacionAnual } from '../types';
 import { MESES } from '../types';
+import { getProximasEfemerides, formatearFecha } from '../data/efemerides';
 
 function getSaludo(): string {
   const h = new Date().getHours();
@@ -238,6 +239,39 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Efemérides próximas */}
+      {(() => {
+        const proximas = getProximasEfemerides(3);
+        return (
+          <div>
+            <div className="flex items-center justify-between mb-2.5">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Próximas efemérides</h3>
+              <Link to="/efemerides" className="text-xs text-amber-600 font-medium flex items-center gap-0.5 hover:underline">
+                Ver todas <ArrowRight size={12} />
+              </Link>
+            </div>
+            <div className="card p-3 space-y-2.5">
+              {proximas.map(e => (
+                <div key={`${e.mes}-${e.dia}`} className="flex items-center gap-2.5">
+                  <span className="text-lg w-7 text-center shrink-0">{e.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-700 truncate">{e.nombre}</p>
+                    <p className="text-xs text-slate-400">{formatearFecha(e)}</p>
+                  </div>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                    e.diasRestantes === 0 ? 'bg-red-100 text-red-700' :
+                    e.diasRestantes <= 7 ? 'bg-orange-100 text-orange-700' :
+                    'bg-slate-100 text-slate-500'
+                  }`}>
+                    {e.diasRestantes === 0 ? '¡Hoy!' : e.diasRestantes === 1 ? 'Mañana' : `${e.diasRestantes}d`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Links módulos secundarios */}
       <div className="grid grid-cols-2 gap-2.5 pb-2">

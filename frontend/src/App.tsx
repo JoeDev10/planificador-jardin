@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from './components/Toast';
 import { ConfirmProvider } from './components/ConfirmModal';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import ProyectosPage from './pages/Proyectos';
@@ -12,6 +13,7 @@ import SecuenciasPage from './pages/Secuencias';
 import Guia from './pages/Guia';
 import Perfil from './pages/Perfil';
 import Dashboard from './pages/Dashboard';
+import EfemeridesPage from './pages/Efemerides';
 
 function ProtectedRoutes() {
   const { user, loading } = useAuth();
@@ -40,6 +42,7 @@ function ProtectedRoutes() {
         <Route path="asistente" element={<Asistente />} />
         <Route path="guia" element={<Guia />} />
         <Route path="perfil" element={<Perfil />} />
+        <Route path="efemerides" element={<EfemeridesPage />} />
       </Route>
     </Routes>
   );
@@ -47,6 +50,7 @@ function ProtectedRoutes() {
 
 export default function App() {
   return (
+    <ThemeProvider>
     <ToastProvider>
       <ConfirmProvider>
         <AuthProvider>
@@ -59,6 +63,7 @@ export default function App() {
         </AuthProvider>
       </ConfirmProvider>
     </ToastProvider>
+    </ThemeProvider>
   );
 }
 
